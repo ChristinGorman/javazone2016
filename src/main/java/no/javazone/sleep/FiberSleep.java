@@ -2,20 +2,21 @@ package no.javazone.sleep;
 
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.strands.SuspendableRunnable;
+import no.javazone.LongRunningTask;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
 public class FiberSleep {
     public static void main(String[] args) throws Exception {
-        AtomicInteger succeededcount = new AtomicInteger(0);
+        int num = 1000_000;
+        CountDownLatch done = new CountDownLatch(num);
         long t = System.currentTimeMillis();
-        int num = 1_000_000;
         IntStream.range(0, num).forEach(i -> new Fiber<>("ECHO", (SuspendableRunnable) () -> {
             Fiber.sleep(1000);
-            succeededcount.incrementAndGet();
+            done.countDown();
         }).start());
-        while (succeededcount.get() < num){ Thread.yield();}
-        System.out.println((System.currentTimeMillis() - t) + " succeeded count " + succeededcount.get());
+        done.await();
+        System.out.println("Fibers sleeping " + LongRunningTask.stats(t));
     }
 }
