@@ -11,7 +11,6 @@ public class Sequence {
         long t = System.currentTimeMillis();
         CountDownLatch countDownLatch = new CountDownLatch(numRuns);
         IntStream.range(0,numRuns).forEach(i-> LongRunningTask.task(countDownLatch));
-        //countDownLatch.await();
         System.out.println("");
         System.out.println("sequence: " + LongRunningTask.stats(t));
     }
