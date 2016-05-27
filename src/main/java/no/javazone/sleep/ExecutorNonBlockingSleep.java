@@ -8,21 +8,17 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-public class ExecutorSleep {
+public class ExecutorNonBlockingSleep {
     public static void main(String[] args) throws Exception {
         ExecutorService ex = Executors.newFixedThreadPool(2000);
-        int num = 100_000;
+        int num = 10_000;
         CountDownLatch done = new CountDownLatch(num);
         long t = System.currentTimeMillis();
         IntStream.range(0, num).forEach(i -> ex.submit(() -> {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
+            NonBlockingSleeper.sleep(1000);
             done.countDown();
         }));
         done.await(15, TimeUnit.SECONDS);
-        System.out.println("Executor sleeping "  + LongRunningTask.stats(t) + " with " + done.getCount() + " remaining tasks");
+        System.out.println("Executor non-blocking sleep "  + LongRunningTask.stats(t) + " with " + done.getCount() + " remaining tasks");
     }
 }
