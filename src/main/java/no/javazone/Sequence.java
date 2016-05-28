@@ -1,5 +1,6 @@
 package no.javazone;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
 import static no.javazone.LongRunningTask.numRuns;
@@ -7,9 +8,9 @@ import static no.javazone.LongRunningTask.numRuns;
 public class Sequence {
 
     public static void main(String[] args) throws Exception{
-        long t = System.currentTimeMillis();
+        StatsPrinter printer = new StatsPrinter(new CountDownLatch(numRuns));
         IntStream.range(0,numRuns).forEach(i-> LongRunningTask.task());
-        System.out.println("sequence: " + StatsPrinter.stats(t, 0));
+        printer.print();
     }
 
 }

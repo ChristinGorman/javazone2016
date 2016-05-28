@@ -13,11 +13,9 @@ public class ExecutorLargeThreadPool {
     public static void main(String[] args) throws Exception{
         ExecutorService executor = Executors.newFixedThreadPool(500);
         CountDownLatch countDownLatch = new CountDownLatch(numRuns);
-        long t = System.currentTimeMillis();
+        StatsPrinter printer = new StatsPrinter(countDownLatch);
         IntStream.range(0,numRuns).forEach(i->executor.submit(() -> task(countDownLatch)));
-        countDownLatch.await();
-        System.out.println("");
-        System.out.println("large thread pool: " + stats(t, countDownLatch.getCount()));
+        printer.print();
         executor.shutdownNow();
     }
 

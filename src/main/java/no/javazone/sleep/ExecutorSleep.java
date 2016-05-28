@@ -14,7 +14,7 @@ public class ExecutorSleep {
         ExecutorService ex = Executors.newFixedThreadPool(2000);
         int num = 100_000;
         CountDownLatch done = new CountDownLatch(num);
-        long t = System.currentTimeMillis();
+        StatsPrinter printer = new StatsPrinter(done);
         IntStream.range(0, num).forEach(i -> ex.submit(() -> {
             try {
                 Thread.sleep(1000);
@@ -23,7 +23,6 @@ public class ExecutorSleep {
             }
             done.countDown();
         }));
-        done.await(15, TimeUnit.SECONDS);
-        System.out.println("Executor sleeping "  + StatsPrinter.stats(t, done.getCount()));
+        printer.print();
     }
 }

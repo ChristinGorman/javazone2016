@@ -13,12 +13,11 @@ public class ExecutorNonBlockingSleep {
         ExecutorService ex = Executors.newFixedThreadPool(2000);
         int num = 10_000;
         CountDownLatch done = new CountDownLatch(num);
-        long t = System.currentTimeMillis();
+        StatsPrinter p = new StatsPrinter(done);
         IntStream.range(0, num).forEach(i -> ex.submit(() -> {
             NonBlockingSleeper.sleep(1000);
             done.countDown();
         }));
-        done.await(15, TimeUnit.SECONDS);
-        System.out.println("Executor non-blocking sleep "  + StatsPrinter.stats(t, done.getCount()));
+        p.print();
     }
 }

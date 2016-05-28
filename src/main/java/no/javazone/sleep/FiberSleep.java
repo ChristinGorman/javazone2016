@@ -11,12 +11,11 @@ public class FiberSleep {
     public static void main(String[] args) throws Exception {
         int num = 1000_000;
         CountDownLatch done = new CountDownLatch(num);
-        long t = System.currentTimeMillis();
+        StatsPrinter printer = new StatsPrinter(done);
         IntStream.range(0, num).forEach(i -> new Fiber<>("ECHO", (SuspendableRunnable) () -> {
             Fiber.sleep(1000);
             done.countDown();
         }).start());
-        done.await();
-        System.out.println("Fibers sleeping " + StatsPrinter.stats(t, done.getCount()));
+        printer.print();
     }
 }

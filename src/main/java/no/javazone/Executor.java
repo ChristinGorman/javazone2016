@@ -12,10 +12,9 @@ public class Executor {
     public static void main(String[] args) throws Exception{
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 5);
         CountDownLatch countDownLatch = new CountDownLatch(numRuns);
-        long t = System.currentTimeMillis();
+        StatsPrinter printer = new StatsPrinter(countDownLatch);
         IntStream.range(0, numRuns).forEach(i -> executor.submit(() -> task(countDownLatch)));
-        countDownLatch.await();
-        System.out.println("executor: " + StatsPrinter.stats(t, countDownLatch.getCount()));
+        printer.print();
         executor.shutdownNow();
     }
 
