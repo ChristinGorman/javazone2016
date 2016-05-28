@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
 import static no.javazone.LongRunningTask.*;
+import static no.javazone.StatsPrinter.*;
 
 public class ExecutorLargeThreadPool {
 

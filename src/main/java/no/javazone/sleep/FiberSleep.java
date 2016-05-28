@@ -2,7 +2,7 @@ package no.javazone.sleep;
 
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.strands.SuspendableRunnable;
-import no.javazone.LongRunningTask;
+import no.javazone.StatsPrinter;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
@@ -17,6 +17,6 @@ public class FiberSleep {
             done.countDown();
         }).start());
         done.await();
-        System.out.println("Fibers sleeping " + LongRunningTask.stats(t));
+        System.out.println("Fibers sleeping " + StatsPrinter.stats(t));
     }
 }

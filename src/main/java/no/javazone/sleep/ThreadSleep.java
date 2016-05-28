@@ -1,10 +1,13 @@
 package no.javazone.sleep;
 
+import no.javazone.StatsPrinter;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 public class ThreadSleep {
+
     public static void main(String[] args) throws Exception {
         int num = 10_000;
         CountDownLatch done =new CountDownLatch(num);
@@ -18,6 +21,6 @@ public class ThreadSleep {
             done.countDown();
         }).start());
         done.await(15, TimeUnit.SECONDS);
-        System.out.println((System.currentTimeMillis() - t));
+        System.out.println("Threads sleeping " + StatsPrinter.stats(t));
     }
 }

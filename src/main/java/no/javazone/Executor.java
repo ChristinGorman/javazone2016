@@ -5,9 +5,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 
-import static no.javazone.LongRunningTask.numRuns;
-import static no.javazone.LongRunningTask.stats;
-import static no.javazone.LongRunningTask.task;
+import static no.javazone.LongRunningTask.*;
 
 public class Executor {
 
@@ -17,7 +15,7 @@ public class Executor {
         long t = System.currentTimeMillis();
         IntStream.range(0, numRuns).forEach(i -> executor.submit(() -> task(countDownLatch)));
         countDownLatch.await();
-        System.out.println("executor: " + stats(t));
+        System.out.println("executor: " + StatsPrinter.stats(t));
         executor.shutdownNow();
     }
 

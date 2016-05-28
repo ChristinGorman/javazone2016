@@ -3,7 +3,9 @@ package no.javazone;
 import java.util.concurrent.CountDownLatch;
 import java.util.stream.IntStream;
 
-import static no.javazone.LongRunningTask.*;
+import static no.javazone.LongRunningTask.numRuns;
+import static no.javazone.LongRunningTask.task;
+import static no.javazone.StatsPrinter.stats;
 
 public class Threads {
 
