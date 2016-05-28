@@ -1,17 +1,19 @@
 package no.javazone;
 
 import java.text.NumberFormat;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
-public class StatsPrinter {
+public class Metrics {
 
     private final long startTime;
     private final CountDownLatch done;
     private final String className;
 
-    public StatsPrinter(CountDownLatch done) {
-        this.done = done;
+    public Metrics() {
+        this.done = new CountDownLatch(Big.numRuns);
         this.startTime = System.currentTimeMillis();
         this.className = new Exception().getStackTrace()[1].getClassName();
 
@@ -31,5 +33,24 @@ public class StatsPrinter {
                 format.format(done.getCount()),
                 format.format(duration),
                 format.format(Runtime.getRuntime().totalMemory())));
+    }
+
+    public <T> Callable<T> track(Supplier<T> supplier) {
+        return () -> {
+            T returnval = supplier.get();
+            done.countDown();
+            return returnval;
+        };
+    }
+
+    public <T> Runnable trackRunnable(Supplier<T> supplier) {
+        return () -> {
+            supplier.get();
+            done.countDown();
+        };
+    }
+
+    public void countDown() {
+        done.countDown();
     }
 }

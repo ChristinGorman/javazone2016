@@ -1,15 +1,16 @@
 package no.javazone;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.stream.IntStream;
-
-import static no.javazone.LongRunningTask.numRuns;
+import static no.javazone.Big.numRuns;
 
 public class Sequence {
 
     public static void main(String[] args) throws Exception{
-        StatsPrinter printer = new StatsPrinter(new CountDownLatch(numRuns));
-        IntStream.range(0,numRuns).forEach(i-> LongRunningTask.task());
+        Metrics printer = new Metrics();
+
+        for (int i = 0; i < numRuns; i++) {
+            printer.track(Big::task).call();
+        }
+
         printer.print();
     }
 
