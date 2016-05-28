@@ -21,7 +21,7 @@ public class ManualThreadPool {
             IntStream.range(0,numRuns).forEach(i->ints.offer(i));
             countDownLatch.await();
             System.out.println("");
-            System.out.println("manual thread pool: " + stats(t));
+            System.out.println("manual thread pool: " + stats(t, countDownLatch.getCount()));
             threads.forEach(th -> th.interrupt());
     }
 

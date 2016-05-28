@@ -19,6 +19,6 @@ public class ExecutorNonBlockingSleep {
             done.countDown();
         }));
         done.await(15, TimeUnit.SECONDS);
-        System.out.println("Executor non-blocking sleep "  + StatsPrinter.stats(t) + " with " + done.getCount() + " remaining tasks");
+        System.out.println("Executor non-blocking sleep "  + StatsPrinter.stats(t, done.getCount()));
     }
 }

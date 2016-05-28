@@ -15,7 +15,7 @@ public class Executor {
         long t = System.currentTimeMillis();
         IntStream.range(0, numRuns).forEach(i -> executor.submit(() -> task(countDownLatch)));
         countDownLatch.await();
-        System.out.println("executor: " + StatsPrinter.stats(t));
+        System.out.println("executor: " + StatsPrinter.stats(t, countDownLatch.getCount()));
         executor.shutdownNow();
     }
 

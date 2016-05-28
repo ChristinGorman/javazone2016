@@ -17,6 +17,6 @@ public class FiberSleep {
             done.countDown();
         }).start());
         done.await();
-        System.out.println("Fibers sleeping " + StatsPrinter.stats(t));
+        System.out.println("Fibers sleeping " + StatsPrinter.stats(t, done.getCount()));
     }
 }

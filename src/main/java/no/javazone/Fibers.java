@@ -16,7 +16,7 @@ public class Fibers {
         IntStream.range(0,numRuns).forEach(i->new Fiber(() -> task(countDownLatch)).start());
         countDownLatch.await();
         System.out.println("");
-        System.out.println("fibers: " + stats(t));
+        System.out.println("fibers: " + stats(t, countDownLatch.getCount()));
     }
 
 }

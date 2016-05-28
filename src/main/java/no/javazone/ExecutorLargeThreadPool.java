@@ -17,7 +17,7 @@ public class ExecutorLargeThreadPool {
         IntStream.range(0,numRuns).forEach(i->executor.submit(() -> task(countDownLatch)));
         countDownLatch.await();
         System.out.println("");
-        System.out.println("large thread pool: " + stats(t));
+        System.out.println("large thread pool: " + stats(t, countDownLatch.getCount()));
         executor.shutdownNow();
     }
 

@@ -21,6 +21,6 @@ public class ThreadSleep {
             done.countDown();
         }).start());
         done.await(15, TimeUnit.SECONDS);
-        System.out.println("Threads sleeping " + StatsPrinter.stats(t));
+        System.out.println("Threads sleeping " + StatsPrinter.stats(t, done.getCount()));
     }
 }

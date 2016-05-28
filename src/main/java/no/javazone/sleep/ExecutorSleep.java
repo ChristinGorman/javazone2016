@@ -24,6 +24,6 @@ public class ExecutorSleep {
             done.countDown();
         }));
         done.await(15, TimeUnit.SECONDS);
-        System.out.println("Executor sleeping "  + StatsPrinter.stats(t) + " with " + done.getCount() + " remaining tasks");
+        System.out.println("Executor sleeping "  + StatsPrinter.stats(t, done.getCount()));
     }
 }

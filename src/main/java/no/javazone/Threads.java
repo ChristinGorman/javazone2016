@@ -15,7 +15,7 @@ public class Threads {
         IntStream.range(0,numRuns).forEach(i->new Thread(() -> task(countDownLatch)).start());
         countDownLatch.await();
         System.out.println("");
-        System.out.println("threads: " + stats(t));
+        System.out.println("threads: " + stats(t, countDownLatch.getCount()));
     }
 
 }
