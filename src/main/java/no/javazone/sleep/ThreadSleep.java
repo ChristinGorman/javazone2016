@@ -1,17 +1,12 @@
 package no.javazone.sleep;
 
-import no.javazone.Big;
 import no.javazone.Metrics;
-
-import java.util.stream.IntStream;
+import no.javazone.RunConfig;
 
 public class ThreadSleep {
 
     public static void main(String[] args) throws Exception {
-        Metrics printer =new Metrics();
-        IntStream.range(0, Big.numRuns)
-                .mapToObj(i -> printer.trackRunnable(BlockingSleeper::sleep1Sec))
-                .forEach(i -> new Thread(i).start());
-        printer.print();
+        Metrics metrics = new Metrics(RunConfig.numRuns);
+        metrics.runTask(() -> new Thread(metrics.trackRunnable(Sleeper::sleep1Sec)).start());
     }
 }

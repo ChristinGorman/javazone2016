@@ -3,25 +3,20 @@ package no.javazone.sleep;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
-import no.javazone.Big;
 import no.javazone.Metrics;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.stream.IntStream;
+import no.javazone.RunConfig;
 
 public class VertxSleepExample {
+
     public static void main(String[] args) throws InterruptedException {
-        VertxOptions options = new VertxOptions();
-        options.setEventLoopPoolSize(100);
-        Vertx vertx = Vertx.vertx(options);
+        Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(100));
         EventBus eb = vertx.eventBus();
-        Metrics printer = new Metrics();
-        eb.consumer("tasks", idx -> {
-            BlockingSleeper.sleep(1000);
-            printer.countDown();
-        });
-        IntStream.range(0, Big.numRuns).forEach(i -> eb.send("tasks",i));
-        printer.print();
+        Metrics metrics = new Metrics(RunConfig.numRuns);
+
+        eb.consumer("tasks", metrics.trackConsumer(Sleeper::sleep1Sec));
+
+        metrics.runTask(() -> eb.send("tasks", true));
         vertx.close();
     }
+
 }

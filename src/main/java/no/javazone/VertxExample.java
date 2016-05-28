@@ -4,20 +4,19 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.eventbus.EventBus;
 
-import java.util.stream.IntStream;
+import static no.javazone.RunConfig.numRuns;
 
 public class VertxExample {
+
     public static void main(String[] args) throws InterruptedException {
-        VertxOptions options = new VertxOptions();
-        options.setEventLoopPoolSize(100);
-        Vertx vertx = Vertx.vertx(options);
-        EventBus eb = vertx.eventBus();
-        Metrics printer = new Metrics();
+        Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(100));
+        EventBus eventBus = vertx.eventBus();
 
-        eb.consumer("tasks", idx -> {Big.task(); printer.countDown();});
+        Metrics metrics = new Metrics(numRuns);
+        eventBus.consumer("tasks", metrics.trackConsumer(Big::task));
+        metrics.runTask(() -> eventBus.send("tasks",true));
 
-        IntStream.range(0, Big.numRuns).forEach(i -> eb.send("tasks",i));
-        printer.print();
         vertx.close();
     }
+
 }
