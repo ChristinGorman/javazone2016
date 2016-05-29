@@ -6,7 +6,8 @@ public class Threads {
 
     public static void main(String[] args) throws Exception{
         Metrics metrics = new Metrics(numRuns);
-        metrics.runTask(() -> new Thread(metrics.trackRunnable(Big::task)).start());
+        Runnable task = metrics.trackRunnable(Big::task);
+        metrics.runTask(() -> new Thread(task).start());
     }
 
 }

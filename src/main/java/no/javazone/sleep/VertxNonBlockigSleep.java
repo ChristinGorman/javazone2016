@@ -13,6 +13,7 @@ public class VertxNonBlockigSleep {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(100));
         EventBus eb = vertx.eventBus();
         Metrics metrics = new Metrics(RunConfig.numRuns);
+
         eb.consumer("tasks", metrics.trackConsumer(Sleeper::sleepwalk1Sec));
         metrics.runTask(() -> eb.send("tasks",true));
         vertx.close();

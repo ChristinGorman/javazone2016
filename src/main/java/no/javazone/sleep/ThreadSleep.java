@@ -7,6 +7,7 @@ public class ThreadSleep {
 
     public static void main(String[] args) throws Exception {
         Metrics metrics = new Metrics(RunConfig.numRuns);
-        metrics.runTask(() -> new Thread(metrics.trackRunnable(Sleeper::sleep1Sec)).start());
+        Runnable task = metrics.trackRunnable(Sleeper::sleep1Sec);
+        metrics.runTask(() -> new Thread(task).start());
     }
 }
