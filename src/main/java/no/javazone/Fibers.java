@@ -8,9 +8,9 @@ import static no.javazone.RunConfig.numRuns;
 public class Fibers {
 
     public static void main(String[] args) throws Exception{
-        Metrics metrics = new Metrics(numRuns);
-        SuspendableRunnable task = metrics.trackSuspendable(Big::task);
-        metrics.runTask(() -> new Fiber(task).start());
+        TaskRunner taskRunner = new TaskRunner(numRuns);
+        SuspendableRunnable task = taskRunner.trackSuspendable(Big::task);
+        taskRunner.runTask(() -> new Fiber(task).start());
     }
 
 }

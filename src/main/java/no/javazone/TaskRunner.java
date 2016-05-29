@@ -1,21 +1,17 @@
 package no.javazone;
 
-import co.paralleluniverse.common.util.SystemProperties;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 
-import javax.management.Query;
 import java.text.NumberFormat;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
-public class Metrics {
+public class TaskRunner {
 
     private static ThreadLocal<Runnable> task = new ThreadLocal<>();
 
@@ -23,13 +19,13 @@ public class Metrics {
     private CountDownLatch done;
     private final String className;
 
-    public Metrics(int numRuns) {
+    public TaskRunner(int numRuns) {
         this.done = new CountDownLatch(numRuns);
         this.startTime = System.currentTimeMillis();
         this.className = new Exception().getStackTrace()[1].getClassName();
 
     }
-    private Metrics() {
+    private TaskRunner() {
         this.className = new Exception().getStackTrace()[1].getClassName();
     }
 
@@ -81,9 +77,9 @@ public class Metrics {
         };
     }
 
-    public static Metrics runWithMetrics(Runnable r) {
+    public static TaskRunner runWithMetrics(Runnable r) {
         task.set(r);
-        return new Metrics();
+        return new TaskRunner();
     }
 
     public void times(int num) throws InterruptedException {

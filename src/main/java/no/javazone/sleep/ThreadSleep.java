@@ -1,13 +1,13 @@
 package no.javazone.sleep;
 
-import no.javazone.Metrics;
+import no.javazone.TaskRunner;
 import no.javazone.RunConfig;
 
 public class ThreadSleep {
 
     public static void main(String[] args) throws Exception {
-        Metrics metrics = new Metrics(RunConfig.numRuns);
-        Runnable task = metrics.trackRunnable(Sleeper::sleep1Sec);
-        metrics.runTask(() -> new Thread(task).start());
+        TaskRunner taskRunner = new TaskRunner(RunConfig.numRuns);
+        Runnable task = taskRunner.trackRunnable(Sleeper::sleep1Sec);
+        taskRunner.runTask(() -> new Thread(task).start());
     }
 }

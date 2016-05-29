@@ -9,7 +9,7 @@ public class ExecutorLargeThreadPool {
 
     public static void main(String[] args) throws Exception{
         ExecutorService executor = Executors.newFixedThreadPool(500);
-        Metrics printer = new Metrics(numRuns);
+        TaskRunner printer = new TaskRunner(numRuns);
         printer.runTask(() -> executor.submit(printer.track(Big::task)));
         executor.shutdownNow();
     }
