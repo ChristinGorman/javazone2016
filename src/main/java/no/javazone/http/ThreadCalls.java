@@ -6,21 +6,25 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import static no.javazone.RunConfig.numRuns;
+import static no.javazone.RunConfig.url;
+
 public class ThreadCalls {
     static CloseableHttpClient client = HttpClientBuilder.
             create().
             setMaxConnPerRoute(50).
             setMaxConnTotal(500).build();
+
     public static void main(String[] args) throws InterruptedException {
-        String url = "http://localhost:8080";
-        TaskRunner runner = new TaskRunner(1000);
-        runner.runTask(()->new Thread(runner.trackRunnable(() -> {
+        TaskRunner runner = new TaskRunner(numRuns);
+        runner.runTask(()->new Thread(() -> {
             try {
-                HttpUriRequest request = new HttpGet(url);
-                return client.execute(request).getStatusLine().getStatusCode();
+                client.execute(new HttpGet(url)).close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            }finally {
+                runner.countDown();
             }
-        })).start());
+        }).start());
     }
 }

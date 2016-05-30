@@ -4,30 +4,41 @@ import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.httpclient.FiberHttpClientBuilder;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import no.javazone.TaskRunner;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static no.javazone.RunConfig.numRuns;
 import static no.javazone.RunConfig.url;
 
 public class ExecutorCalls {
 
-    public static void main(String[] args) throws InterruptedException {
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        TaskRunner runner = new TaskRunner(1000);
+    static CloseableHttpClient client = HttpClientBuilder.
+            create().
+            setMaxConnPerRoute(50).
+            setMaxConnTotal(500).build();
 
-        runner.runTask(() -> executor.submit(runner.trackRunnable(() -> {
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 3);
+        TaskRunner runner = new TaskRunner(numRuns);
+
+        runner.runTask(() -> executor.submit(() -> {
             try {
-                CloseableHttpClient client = HttpClientBuilder.create().build();
-                HttpUriRequest request = new HttpGet(url);
-                return client.execute(request).getStatusLine().getStatusCode();
+                client.execute(new HttpGet(url)).close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            } finally {
+                runner.countDown();
             }
-        })));
+        }));
+        executor.shutdownNow();
     }
 }
