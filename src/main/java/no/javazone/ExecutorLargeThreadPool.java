@@ -7,6 +7,9 @@ import static no.javazone.RunConfig.numRuns;
 
 public class ExecutorLargeThreadPool {
 
+    /**
+    Larger thread pool does not help one bit
+     */
     public static void main(String[] args) throws Exception{
         ExecutorService executor = Executors.newFixedThreadPool(500);
         TaskRunner printer = new TaskRunner(numRuns);

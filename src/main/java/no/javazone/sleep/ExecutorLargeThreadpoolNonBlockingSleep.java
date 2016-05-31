@@ -8,6 +8,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ExecutorLargeThreadpoolNonBlockingSleep {
+
+    /**
+     *
+     * blocking or non-blocking does not matter. The performance is the same
+     */
     public static void main(String[] args) throws Exception {
         ExecutorService ex = Executors.newFixedThreadPool(500);
         TaskRunner taskRunner = new TaskRunner(RunConfig.numRuns);

@@ -9,6 +9,9 @@ import no.javazone.RunConfig;
 public class VertxNonBlockigSleep {
 
 
+    /**
+    Nope, no good
+     */
     public static void main(String[] args) throws InterruptedException {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(100));
         EventBus eb = vertx.eventBus();

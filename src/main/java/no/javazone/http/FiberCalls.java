@@ -17,6 +17,9 @@ public class FiberCalls {
             setMaxConnPerRoute(1000).
             setMaxConnTotal(1000).build();
 
+    /**
+     * In current state - no where near as good performance as vertx, but syntax is better
+     */
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);
         runner.runTask(() -> new Fiber((SuspendableRunnable) () -> {

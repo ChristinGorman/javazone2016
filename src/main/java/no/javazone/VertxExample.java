@@ -8,6 +8,9 @@ import static no.javazone.RunConfig.numRuns;
 
 public class VertxExample {
 
+    /**
+    Syntax sucks, and the performance isn't great either.
+     */
     public static void main(String[] args) throws InterruptedException {
         Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(Runtime.getRuntime().availableProcessors()));
         EventBus eventBus = vertx.eventBus();

@@ -14,6 +14,9 @@ public class ThreadCalls {
             setMaxConnPerRoute(50).
             setMaxConnTotal(50).build();
 
+    /**
+    Not great and obviously limited by the number of threads the system  memory can support
+     */
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);
         runner.runTask(()->new Thread(() -> {

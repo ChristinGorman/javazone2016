@@ -8,6 +8,9 @@ import static no.javazone.RunConfig.numRuns;
 
 public class FiberSleep {
 
+    /**
+    works for any number of fibers - millions
+     */
     public static void main(String[] args) throws Exception {
         TaskRunner taskRunner = new TaskRunner(numRuns);
         SuspendableRunnable task = taskRunner.trackSuspendable(Sleeper::fiberSleep);

@@ -7,6 +7,9 @@ import static no.javazone.RunConfig.numRuns;
 
 public class Fibers {
 
+    /**
+    Simple syntax, but no performance gain
+     */
     public static void main(String[] args) throws Exception{
         TaskRunner taskRunner = new TaskRunner(numRuns);
         SuspendableRunnable task = taskRunner.trackSuspendable(Big::task);

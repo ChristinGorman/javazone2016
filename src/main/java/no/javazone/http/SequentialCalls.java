@@ -15,6 +15,9 @@ public class SequentialCalls {
             setMaxConnPerRoute(50).
             setMaxConnTotal(50).build();
 
+    /**
+    Not even worth running.
+     */
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);
         runner.runTask(() -> {

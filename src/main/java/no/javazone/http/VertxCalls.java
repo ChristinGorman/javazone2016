@@ -9,6 +9,9 @@ import static no.javazone.RunConfig.numRuns;
 public class VertxCalls {
 
 
+    /**
+    Sucky syntax, great performance. Millions of requests handled with no problems.
+     */
     public static void main(String[] args) throws InterruptedException {
         Vertx vertx = Vertx.vertx();
         HttpClient client = vertx.createHttpClient();
