@@ -12,7 +12,7 @@ public class ExecutorSleep {
 
     /**
      *
-     * Absolutely hopeless times out after only completing a tiny fraction
+     * Absolutely hopeless, times out after only completing a tiny fraction
      */
     public static void main(String[] args) throws Exception {
         ExecutorService ex = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
