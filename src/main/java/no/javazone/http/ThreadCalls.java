@@ -2,7 +2,6 @@ package no.javazone.http;
 
 import no.javazone.TaskRunner;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -13,7 +12,7 @@ public class ThreadCalls {
     static CloseableHttpClient client = HttpClientBuilder.
             create().
             setMaxConnPerRoute(50).
-            setMaxConnTotal(500).build();
+            setMaxConnTotal(50).build();
 
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);

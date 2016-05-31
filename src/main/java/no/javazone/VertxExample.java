@@ -9,7 +9,7 @@ import static no.javazone.RunConfig.numRuns;
 public class VertxExample {
 
     public static void main(String[] args) throws InterruptedException {
-        Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(100));
+        Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(Runtime.getRuntime().availableProcessors()));
         EventBus eventBus = vertx.eventBus();
 
         TaskRunner taskRunner = new TaskRunner(numRuns);

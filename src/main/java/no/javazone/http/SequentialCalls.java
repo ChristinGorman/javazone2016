@@ -13,7 +13,7 @@ public class SequentialCalls {
     static CloseableHttpClient client = HttpClientBuilder.
             create().
             setMaxConnPerRoute(50).
-            setMaxConnTotal(500).build();
+            setMaxConnTotal(50).build();
 
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);

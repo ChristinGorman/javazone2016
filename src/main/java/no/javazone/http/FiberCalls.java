@@ -13,17 +13,17 @@ import static no.javazone.RunConfig.url;
 public class FiberCalls {
 
     static CloseableHttpClient client = FiberHttpClientBuilder.
-            create(8).
-            setMaxConnPerRoute(50).
-            setMaxConnTotal(500).build();
+            create(20).
+            setMaxConnPerRoute(1000).
+            setMaxConnTotal(1000).build();
 
     public static void main(String[] args) throws InterruptedException {
         TaskRunner runner = new TaskRunner(numRuns);
         runner.runTask(() -> new Fiber((SuspendableRunnable) () -> {
             try {
-                client.execute(new HttpGet(url)).close();
+                client.execute(new HttpGet(url));
             } catch (Exception e) {
-                e.printStackTrace();
+                //e.printStackTrace();
             }finally {
                 runner.countDown();
             }
