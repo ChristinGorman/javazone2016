@@ -5,6 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 
 import java.text.NumberFormat;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,15 @@ import java.util.stream.LongStream;
 
 public class TaskRunner {
 
-    private static ThreadLocal<Runnable> task = new ThreadLocal<>();
+
+    public static class Result {
+        public final long duration;
+        public final long memory;
+        public Result(long duration, long memory) {
+            this.duration = duration;
+            this.memory = memory;
+        }
+    }
 
     private long startTime;
     private CountDownLatch done;
@@ -29,9 +38,8 @@ public class TaskRunner {
         this.className = new Exception().getStackTrace()[1].getClassName();
     }
 
-    public void print() throws InterruptedException {
+    public void print(Result result) throws InterruptedException {
         done.await(15, TimeUnit.SECONDS);
-        long duration = System.currentTimeMillis() - startTime;
 
         NumberFormat format = NumberFormat.getInstance();
         format.setMaximumFractionDigits(0);
@@ -41,28 +49,25 @@ public class TaskRunner {
                 "%s: remaining: %s, duration: %s, memory: %s",
                 className.substring(className.lastIndexOf(".")+1),
                 format.format(done.getCount()),
-                format.format(duration),
-                format.format(Runtime.getRuntime().totalMemory())));
+                format.format(result.duration),
+                format.format(result.memory)));
     }
 
-    public <T> Callable<T> track(Supplier<T> supplier) {
-        return () -> {
-            T returnval = supplier.get();
-            done.countDown();
-            return returnval;
-        };
-    }
 
-    public <T> Runnable trackRunnable(Supplier<T> supplier) {
+
+    public Runnable track(Supplier supplier) {
         return () -> {
             supplier.get();
             done.countDown();
         };
     }
-    public SuspendableRunnable trackSuspendable(Supplier<?> supplier) {
+    public SuspendableRunnable trackSuspendable(Supplier supplier) {
         return () -> {
-            supplier.get();
-            done.countDown();
+            try {
+                supplier.get();
+            }finally {
+                done.countDown();
+            }
         };
     }
 
@@ -70,27 +75,19 @@ public class TaskRunner {
         done.countDown();
     }
 
-    public <T> Handler<Message<T>> trackConsumer(Supplier<?> task) {
+    public Handler trackConsumer(Supplier task) {
         return (i) -> {
             task.get();
             done.countDown();
         };
     }
 
-    public static TaskRunner runWithMetrics(Runnable r) {
-        task.set(r);
-        return new TaskRunner();
-    }
 
-    public void times(int num) throws InterruptedException {
-        done = new CountDownLatch(num);
-        startTime = System.currentTimeMillis();
-        Runnable runnable = task.get();
-        runTask(runnable);
-    }
-
-    public void runTask(Runnable task) throws InterruptedException {
+    public Result runTask(Runnable task) throws InterruptedException {
         LongStream.range(0, done.getCount()).forEach(i -> task.run());
-        print();
+        Result result = new Result(System.currentTimeMillis() - startTime, Runtime.getRuntime().totalMemory());
+        print(result);
+        return result;
     }
+
 }

@@ -15,7 +15,7 @@ public class ExecutorLargeThreadpoolSleep {
     public static void main(String[] args) throws Exception {
         ExecutorService ex = Executors.newFixedThreadPool(500);
         TaskRunner taskRunner = new TaskRunner(RunConfig.numRuns);
-        Callable<Long> task = taskRunner.track(Sleeper::sleep1Sec);
+        Runnable task = taskRunner.track(Sleeper::sleep1Sec);
         taskRunner.runTask(() -> ex.submit(task));
         ex.shutdownNow();
     }

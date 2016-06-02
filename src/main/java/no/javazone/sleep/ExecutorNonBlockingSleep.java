@@ -17,7 +17,7 @@ public class ExecutorNonBlockingSleep {
     public static void main(String[] args) throws Exception {
         ExecutorService ex = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         TaskRunner taskRunner = new TaskRunner(numRuns);
-        Callable<Long> task = taskRunner.track(Sleeper::sleepwalk1Sec);
+        Runnable task = taskRunner.track(Sleeper::sleepwalk1Sec);
         taskRunner.runTask(() -> ex.submit(task));
         ex.shutdownNow();
     }
