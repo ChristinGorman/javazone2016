@@ -19,7 +19,7 @@ public class Akka {
         @Override
         public void onReceive(Object msg) throws Exception {
             if ("run".equals(msg)) {
-                BigInteger result = Big.task();
+                Long result = Big.task();
 
 //                System.out.println(self().path() + " Made result: " + result);
 
@@ -55,7 +55,7 @@ public class Akka {
                     activeTasks++;
                 }
                 originator = sender();
-            } else if (msg instanceof BigInteger) {
+            } else if (msg instanceof Long) {
 //                System.out.println(self().path() + " Result ready: " + msg);
 
                 activeTasks--;

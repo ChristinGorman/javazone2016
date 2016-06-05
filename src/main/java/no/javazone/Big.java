@@ -3,15 +3,17 @@ package no.javazone;
 import co.paralleluniverse.fibers.Suspendable;
 
 import java.math.BigInteger;
+import java.util.Random;
 
 
 public class Big {
 
     @Suspendable
-    public static BigInteger task() {
-        BigInteger big = BigInteger.valueOf(1l);
+    public static long task() {
+        Random random = new Random();
+        long big = 1L;
         for (int j = 0; j < 100_000; j++) {
-            big = big.add(BigInteger.valueOf(100_000 - j));
+            big += random.nextLong() - j;
         }
         return big;
     }
