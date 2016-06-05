@@ -6,34 +6,28 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.routing.RoundRobinPool;
-import no.javazone.util.Timer;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
-import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
 
 import static no.javazone.util.Timer.time;
 
 public class Akka {
 
-    static class TaskActor extends UntypedActor {
+    private static class TaskActor extends UntypedActor {
 
         @Override
         public void onReceive(Object msg) throws Exception {
             if ("run".equals(msg)) {
-                Long result = Big.task();
-
-//                System.out.println(self().path() + " Made result: " + result);
-
-                sender().tell(result, self());
+                sender().tell(Big.task(), self());
             } else {
                 unhandled(msg);
             }
         }
     }
 
-    static class TaskRunner extends UntypedActor {
+    private static class TaskRunner extends UntypedActor {
 
         private ActorRef taskActor;
         private ActorRef originator;
@@ -42,10 +36,8 @@ public class Akka {
 
         public TaskRunner() {
             this.taskActor =
-                    context().actorOf(Props
-                                    .create(TaskActor.class)
-                                    .withRouter(new RoundRobinPool(10))
-                            ,
+                    context().actorOf(
+                            Props.create(TaskActor.class).withRouter(new RoundRobinPool(10)),
                             "task"
                     );
         }
@@ -59,8 +51,6 @@ public class Akka {
                 }
                 originator = sender();
             } else if (msg instanceof Long) {
-//                System.out.println(self().path() + " Result ready: " + msg);
-
                 activeTasks--;
                 if (activeTasks == 0) {
                     originator.tell("done", self());
