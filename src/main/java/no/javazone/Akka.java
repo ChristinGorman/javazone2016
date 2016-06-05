@@ -6,11 +6,14 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.pattern.Patterns;
 import akka.routing.RoundRobinPool;
+import no.javazone.util.Timer;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
 import java.math.BigInteger;
 import java.util.concurrent.TimeUnit;
+
+import static no.javazone.util.Timer.time;
 
 public class Akka {
 
@@ -41,7 +44,7 @@ public class Akka {
             this.taskActor =
                     context().actorOf(Props
                                     .create(TaskActor.class)
-                            .withRouter(new RoundRobinPool(10))
+                                    .withRouter(new RoundRobinPool(10))
                             ,
                             "task"
                     );
@@ -73,16 +76,11 @@ public class Akka {
     public static void main(String[] args) throws Exception {
         ActorSystem system = ActorSystem.create();
 
-        System.out.println("Starting with " + Runtime.getRuntime().availableProcessors() + " cpu's");
+        time(() -> {
+            ActorRef taskRunner = system.actorOf(Props.create(TaskRunner.class), "runner");
 
-        long start = System.nanoTime();
-
-        ActorRef taskRunner = system.actorOf(Props.create(TaskRunner.class), "runner");
-
-        Await.result(Patterns.ask(taskRunner, "start", 30000), Duration.create(30, TimeUnit.SECONDS));
-
-        System.out.println("Got results! " + ((System.nanoTime() - start) / 1e9) + "s");
-
+            Await.result(Patterns.ask(taskRunner, "start", 30000), Duration.create(30, TimeUnit.SECONDS));
+        });
         system.shutdown();
     }
 }
