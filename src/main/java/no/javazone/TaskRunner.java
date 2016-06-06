@@ -29,9 +29,9 @@ public class TaskRunner {
     private final String className;
 
     public TaskRunner(int numRuns) {
+        this.className = new Exception().getStackTrace()[1].getClassName();
         this.done = new CountDownLatch(numRuns);
         this.startTime = System.currentTimeMillis();
-        this.className = new Exception().getStackTrace()[1].getClassName();
 
     }
     private TaskRunner() {
@@ -39,7 +39,6 @@ public class TaskRunner {
     }
 
     public void print(Result result) throws InterruptedException {
-        done.await(15, TimeUnit.SECONDS);
 
         NumberFormat format = NumberFormat.getInstance();
         format.setMaximumFractionDigits(0);
@@ -85,6 +84,7 @@ public class TaskRunner {
 
     public Result runTask(Runnable task) throws InterruptedException {
         LongStream.range(0, done.getCount()).forEach(i -> task.run());
+        done.await(15, TimeUnit.SECONDS);
         Result result = new Result(System.currentTimeMillis() - startTime, Runtime.getRuntime().totalMemory());
         print(result);
         return result;
