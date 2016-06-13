@@ -24,7 +24,9 @@ public class FiberCalls {
         TaskRunner runner = new TaskRunner(numRuns);
         runner.runTask(() -> new Fiber((SuspendableRunnable) () -> {
             try {
+                long threadId = Thread.currentThread().getId();
                 client.execute(new HttpGet(url));
+                if (Thread.currentThread().getId() != threadId) System.out.println("hah! different thread");
             } catch (Exception e) {
                 //e.printStackTrace();
             }finally {

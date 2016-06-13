@@ -32,29 +32,33 @@ public class TypicalExamples {
     }
 
     public Person getPersonFromWebService(String id) {
-        return new Person("Noen", 29);
+        return new Person(id, "Noen", 29);
     }
 
     public Address getAddressFromWebService(String id) {
-        return new Address("Hus 15", "Gate 1", "1337", "Sandvika");
+        return new Address(id, "Hus 15", "Gate 1", "1337", "Sandvika");
     }
 
     public static class Person {
+        public final String id;
         public final String name;
         public final int age;
-        public Person(String name, int age) {
+        public Person(String id, String name, int age) {
+            this.id = id;
             this.name = name;
             this.age = age;
         }
     }
 
     public static class Address {
+        public final String id;
         public final String street1;
         public final String street2;
         public final String postcode;
         public final String city;
 
-        public Address(String street1, String street2, String postcode, String city) {
+        public Address(String id, String street1, String street2, String postcode, String city) {
+            this.id = id;
             this.street1 = street1;
             this.street2 = street2;
             this.postcode = postcode;
@@ -69,6 +73,11 @@ public class TypicalExamples {
         public PersonInCity(String name, String city) {
             this.name = name;
             this.city = city;
+        }
+
+        @Override
+        public String toString() {
+            return name + " lives in " + city;
         }
     }
 
