@@ -40,9 +40,13 @@ public class TypicalExamples {
     }
 
     public static class Person {
-        public final String id;
-        public final String name;
-        public final int age;
+        public String id;
+        public String name;
+        public int age;
+
+        public Person() {
+
+        }
         public Person(String id, String name, int age) {
             this.id = id;
             this.name = name;
@@ -51,12 +55,15 @@ public class TypicalExamples {
     }
 
     public static class Address {
-        public final String id;
-        public final String street1;
-        public final String street2;
-        public final String postcode;
-        public final String city;
+        public String id;
+        public String street1;
+        public String street2;
+        public String postcode;
+        public String city;
 
+        public Address() {
+
+        }
         public Address(String id, String street1, String street2, String postcode, String city) {
             this.id = id;
             this.street1 = street1;
