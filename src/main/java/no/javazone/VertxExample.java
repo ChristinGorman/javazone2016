@@ -28,14 +28,17 @@ public class VertxExample {
 
         CompositeFuture.all(personFuture, addressFuture).setHandler(result -> {
             if (result.succeeded()) {
-                //TODO få tak i resultatene - hvor i alle dager er de?
-                System.out.println("Hurra! men hvor er resultatene mine...");
+                System.out.println(translate(personFuture.result(), addressFuture.result()));
             } else {
                 result.cause().printStackTrace();
             }
             vertx.close();
         });
 
+    }
+
+    private static TypicalExamples.PersonInCity translate(TypicalExamples.Person p, TypicalExamples.Address a){
+        return new TypicalExamples.PersonInCity(p.name, a.city);
     }
 
     private static boolean validateId(String id) {
