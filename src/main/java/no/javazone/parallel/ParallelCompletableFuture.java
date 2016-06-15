@@ -9,19 +9,19 @@ public class ParallelCompletableFuture {
     public static void main(String[] args) throws Exception {
         time(() ->
             CompletableFuture
-                    .supplyAsync(Tasks::sleepStr)
-                    .thenCombine(
-                            CompletableFuture.supplyAsync(Tasks::sleepRandInt),
-                            (str, num) -> str + "#" + num
-                    )
-                    .whenComplete((str, err) -> {
-                        if (err != null) {
-                            System.out.println("Error: " + err.getMessage());
-                        } else {
-                            System.out.println("Got result: " + str);
-                        }
-                    })
-                    .get()
+                .supplyAsync(Tasks::sleepStr)
+                .thenCombine(
+                    CompletableFuture.supplyAsync(Tasks::sleepRandInt),
+                    (str, num) -> str + "#" + num
+                )
+                .whenComplete((str, err) -> {
+                    if (err != null) {
+                        System.out.println("Error: " + err.getMessage());
+                    } else {
+                        System.out.println("Got result: " + str);
+                    }
+                })
+                .get()
 
         );
     }

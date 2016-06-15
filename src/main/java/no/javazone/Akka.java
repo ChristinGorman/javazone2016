@@ -36,10 +36,10 @@ public class Akka {
 
         public TaskRunner() {
             this.taskActor =
-                    context().actorOf(
-                            Props.create(TaskActor.class).withRouter(new RoundRobinPool(10)),
-                            "task"
-                    );
+                context().actorOf(
+                    Props.create(TaskActor.class).withRouter(new RoundRobinPool(10)),
+                    "task"
+                );
         }
 
         @Override

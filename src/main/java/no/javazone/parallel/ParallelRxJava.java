@@ -18,9 +18,9 @@ public class ParallelRxJava {
             Observable<Integer> intResult = Observable.from(executor.submit(Tasks::sleepRandInt));
 
             Observable<String> result = Observable.zip(
-                    strResult,
-                    intResult,
-                    (str, num) -> str + "#" + num
+                strResult,
+                intResult,
+                (str, num) -> str + "#" + num
             );
 
             result.subscribe(str -> System.out.println("Got result: " + str));
