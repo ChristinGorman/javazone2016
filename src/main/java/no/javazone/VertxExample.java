@@ -12,15 +12,16 @@ public class VertxExample {
     static HttpClient httpClient = vertx.createHttpClient();
 
     public static void main(String[] args) throws Exception {
-        getPersonInCity("abc", result -> {
+        TaskRunner taskRunner = new TaskRunner(1000);
+        taskRunner.runTask(() -> getPersonInCity("abc", result -> {
             if (result.succeeded()) {
                 System.out.println(result.result());
-            }else {
+            } else {
                 result.cause().printStackTrace();
             }
-            vertx.close();
-        });
-
+            taskRunner.countDown();
+        }));
+        vertx.close();
     }
 
     public static void getPersonInCity(String id, Handler<AsyncResult<TypicalExamples.PersonInCity>> handler) {

@@ -15,10 +15,8 @@ public class ExecutorSleep {
      * Absolutely hopeless, times out after only completing a tiny fraction
      */
     public static void main(String[] args) throws Exception {
-        ExecutorService ex = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        TaskRunner taskRunner = new TaskRunner(numRuns);
-        Runnable task = taskRunner.track(Sleeper::sleep1Sec);
-        taskRunner.runTask(() -> ex.submit(task));
-        ex.shutdownNow();
+        int numProcessors = Runtime.getRuntime().availableProcessors();
+        ExecutorService ex = Executors.newFixedThreadPool(numProcessors);
+        new TaskRunner(1_000, Sleeper::sleep1Sec).runOnExecutor(ex);
     }
 }

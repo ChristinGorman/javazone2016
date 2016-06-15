@@ -1,10 +1,9 @@
-package no.javazone.http;
+package no.javazone;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import no.javazone.TypicalExamples;
 
 public class VertxHttpServer {
 

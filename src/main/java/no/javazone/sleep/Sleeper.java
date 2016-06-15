@@ -47,7 +47,7 @@ public class Sleeper {
 
     static Queue<SleepCallback> sleepTasks = new LinkedBlockingQueue<>();
     static {
-        new Thread(()->{
+        Thread thread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 SleepCallback first = sleepTasks.poll();
                 if (first != null) {
@@ -58,7 +58,9 @@ public class Sleeper {
                     }
                 }
             }
-        }).start();
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public static void sleep(int millis, Runnable callback) {

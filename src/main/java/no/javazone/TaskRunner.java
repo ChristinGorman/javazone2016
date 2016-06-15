@@ -1,44 +1,52 @@
 package no.javazone;
 
+import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.strands.SuspendableRunnable;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 
 import java.text.NumberFormat;
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
 
 public class TaskRunner {
 
 
+
     public static class Result {
+
         public final long duration;
+
         public final long memory;
+
         public Result(long duration, long memory) {
             this.duration = duration;
             this.memory = memory;
         }
-    }
 
+    }
     private long startTime;
+    private Supplier task;
     private CountDownLatch done;
     private final String className;
 
     public TaskRunner(int numRuns) {
+        this(numRuns, null);
+    }
+
+    public TaskRunner(int numRuns, Supplier task) {
+        this.task = task;
         this.className = new Exception().getStackTrace()[1].getClassName();
         this.done = new CountDownLatch(numRuns);
         this.startTime = System.currentTimeMillis();
-
-    }
-    private TaskRunner() {
-        this.className = new Exception().getStackTrace()[1].getClassName();
     }
 
-    public void print(Result result) throws InterruptedException {
+    private void print(Result result) throws Exception{
+        print(result, done.getCount(), className);
+    }
+    public static void print(Result result, long remainingCount, String className) throws InterruptedException {
 
         NumberFormat format = NumberFormat.getInstance();
         format.setMaximumFractionDigits(0);
@@ -47,26 +55,30 @@ public class TaskRunner {
         System.out.println(String.format(
                 "%s: remaining: %s, duration: %s, memory: %s",
                 className.substring(className.lastIndexOf(".")+1),
-                format.format(done.getCount()),
+                format.format(remainingCount),
                 format.format(result.duration),
                 format.format(result.memory)));
     }
 
+
+    public void run() throws Exception {
+        runOnExecutor(Executors.newSingleThreadExecutor());
+    }
+
+    public void runOnExecutor(ExecutorService executor) throws Exception {
+        runTask(() -> executor.submit(track(task)));
+        executor.shutdownNow();
+    }
+
+    public void runOnThread() throws Exception {
+        runTask(() -> new Thread(track(task)).start());
+    }
 
 
     public Runnable track(Supplier supplier) {
         return () -> {
             supplier.get();
             done.countDown();
-        };
-    }
-    public SuspendableRunnable trackSuspendable(Supplier supplier) {
-        return () -> {
-            try {
-                supplier.get();
-            }finally {
-                done.countDown();
-            }
         };
     }
 
@@ -82,7 +94,7 @@ public class TaskRunner {
     }
 
 
-    public Result runTask(Runnable task) throws InterruptedException {
+    public Result runTask(Runnable task) throws Exception {
         LongStream.range(0, done.getCount()).forEach(i -> task.run());
         done.await(15, TimeUnit.SECONDS);
         Result result = new Result(System.currentTimeMillis() - startTime, Runtime.getRuntime().totalMemory());

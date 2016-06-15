@@ -12,11 +12,9 @@ public class SleepWithCallback {
     NOW we can execute as many tasks as we want with normal threads.
      */
     public static void main(String[] args) throws Exception {
-        TaskRunner taskRunner = new TaskRunner(100000);
-        ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        taskRunner.runTask(() -> executor.submit(() -> Sleeper.sleep(2000, () -> taskRunner.countDown())));
-        executor.shutdown();
-        executor.awaitTermination(10, TimeUnit.SECONDS);
+        TaskRunner taskRunner = new TaskRunner(100_000);
+        taskRunner.runTask(() -> Sleeper.sleep(1000, () -> taskRunner.countDown()));
+
     }
 }
