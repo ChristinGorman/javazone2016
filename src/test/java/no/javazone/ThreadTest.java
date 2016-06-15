@@ -22,7 +22,7 @@ public class ThreadTest {
                 multiThreadedResult.duration <= (singleThreadedResult.duration / (processors-1)));
     }
 
-    private TaskRunner.Result multiThreaded(int runs) throws InterruptedException {
+    private TaskRunner.Result multiThreaded(int runs) throws Exception {
         TaskRunner runner = new TaskRunner(runs);
         return runner.runTask(() -> new Thread(runner.track(Big::task)).start());
     }
