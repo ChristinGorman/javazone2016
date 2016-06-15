@@ -9,6 +9,6 @@ public class Timer {
     public static void time(Timed timed) throws Exception {
         long start = System.nanoTime();
         timed.apply();
-        System.out.println("Result in " + ((System.nanoTime() - start) / 1e9) + "s");
+        System.out.printf("Running time: %.3fs\n", ((System.nanoTime() - start) / 1e9));
     }
 }

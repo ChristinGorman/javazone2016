@@ -46,7 +46,7 @@ public class Sleeper {
     }
 
     static Queue<SleepCallback> sleepTasks = new LinkedBlockingQueue<>();
-    static {
+    /*static {
         new Thread(()->{
             while (!Thread.currentThread().isInterrupted()) {
                 SleepCallback first = sleepTasks.poll();
@@ -59,7 +59,7 @@ public class Sleeper {
                 }
             }
         }).start();
-    }
+    }*/
 
     public static void sleep(int millis, Runnable callback) {
         sleepTasks.offer(new SleepCallback(System.currentTimeMillis() + millis, callback));
