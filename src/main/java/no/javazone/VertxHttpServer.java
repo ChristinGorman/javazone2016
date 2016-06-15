@@ -14,6 +14,7 @@ public class VertxHttpServer {
         router.get("/address/:id").handler(VertxHttpServer::returnAddress);
         router.get("/").handler(ctx -> ctx.response().end("Hello world"));
         vertx.createHttpServer().requestHandler(router::accept).listen(8080);
+        System.out.println("Server started on port 8080");
     }
 
     private static void returnPerson(RoutingContext ctx) {
