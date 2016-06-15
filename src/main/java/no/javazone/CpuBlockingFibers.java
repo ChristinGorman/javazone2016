@@ -3,7 +3,7 @@ package no.javazone;
 import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.strands.SuspendableRunnable;
 
-public class Fibers {
+public class CpuBlockingFibers {
 
     /**
      * Simple syntax, but no performance gain
