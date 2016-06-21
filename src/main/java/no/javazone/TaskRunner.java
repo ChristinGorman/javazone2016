@@ -1,12 +1,9 @@
 package no.javazone;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.strands.SuspendableRunnable;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 
 import java.text.NumberFormat;
-import java.util.Optional;
+import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
@@ -28,6 +25,7 @@ public class TaskRunner {
 
     }
     private long startTime;
+    private int numRuns;
     private Supplier task;
     private CountDownLatch done;
     private final String className;
@@ -37,6 +35,7 @@ public class TaskRunner {
     }
 
     public TaskRunner(int numRuns, Supplier task) {
+        this.numRuns = numRuns;
         this.task = task;
         this.className = new Exception().getStackTrace()[1].getClassName();
         this.done = new CountDownLatch(numRuns);
@@ -86,20 +85,32 @@ public class TaskRunner {
         done.countDown();
     }
 
-    public Handler trackConsumer(Supplier task) {
-        return (i) -> {
-            task.get();
-            done.countDown();
-        };
-    }
 
+    Thread memoryPrintThread = new Thread(()->{
+        while (!Thread.currentThread().isInterrupted()) {
+            try {
+                int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
+                long progress = ((numRuns - done.getCount()) * 100) / numRuns;
+                String line = "\r" + mem + "% memory used (progress: " + progress + "%)";
+                System.out.print(line);
+                System.out.flush();
+                Thread.sleep(200);
+            }catch(InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    });
 
     public Result runTask(Runnable task) throws Exception {
+        memoryPrintThread.start();
         LongStream.range(0, done.getCount()).forEach(i -> task.run());
         done.await(15, TimeUnit.SECONDS);
+        memoryPrintThread.interrupt();
+        System.out.println();
         Result result = new Result(System.currentTimeMillis() - startTime, Runtime.getRuntime().totalMemory());
         print(result);
         return result;
     }
-
 }

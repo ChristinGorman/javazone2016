@@ -2,11 +2,9 @@ package no.javazone.sleep;
 
 import no.javazone.TaskRunner;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static no.javazone.RunConfig.numRuns;
 
 public class ExecutorNonBlockingSleep {
 

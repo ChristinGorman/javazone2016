@@ -1,11 +1,8 @@
 package no.javazone;
 
-import no.javazone.util.Timer;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static no.javazone.RunConfig.numRuns;
 
 public class ExecutorLargeThreadPool {
 
@@ -13,12 +10,8 @@ public class ExecutorLargeThreadPool {
      * Larger thread pool does not help one bit
      */
     public static void main(String[] args) throws Exception {
-        ExecutorService executor = Executors.newFixedThreadPool(500);
-        Timer.time(() -> {
-            TaskRunner printer = new TaskRunner(numRuns);
-            printer.runTask(() -> executor.submit(printer.track(Big::task)));
-            executor.shutdownNow();
-        });
+        ExecutorService executor = Executors.newFixedThreadPool(100);
+        new TaskRunner(10_000, Big::task).runOnExecutor(executor);
     }
 
 }
