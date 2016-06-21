@@ -90,7 +90,7 @@ public class TaskRunner {
             try {
                 int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
                 long progress = ((numRuns - done.getCount()) * 100) / numRuns;
-                long timeoutProgress = ((System.currentTimeMillis() - startTime )* 100) / TIMEOUT_MILLIS;
+                long timeoutProgress = Math.min(100, ((System.currentTimeMillis() - startTime )* 100) / TIMEOUT_MILLIS);
                 String line = "\r" + mem + "% memory used (progress: " + Math.max(progress, timeoutProgress) + "%)";
                 System.out.print(line);
                 System.out.flush();
