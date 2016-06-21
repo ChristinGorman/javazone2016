@@ -9,8 +9,7 @@ import java.util.function.Supplier;
 import java.util.stream.LongStream;
 
 public class TaskRunner {
-
-
+    private static final long TIMEOUT_MILLIS = 15_000;
 
     public static class Result {
 
@@ -91,7 +90,8 @@ public class TaskRunner {
             try {
                 int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
                 long progress = ((numRuns - done.getCount()) * 100) / numRuns;
-                String line = "\r" + mem + "% memory used (progress: " + progress + "%)";
+                long timeoutProgress = ((System.currentTimeMillis() - startTime )* 100) / TIMEOUT_MILLIS;
+                String line = "\r" + mem + "% memory used (progress: " + Math.max(progress, timeoutProgress) + "%)";
                 System.out.print(line);
                 System.out.flush();
                 Thread.sleep(200);
@@ -106,7 +106,7 @@ public class TaskRunner {
     public Result runTask(Runnable task) throws Exception {
         memoryPrintThread.start();
         LongStream.range(0, done.getCount()).forEach(i -> task.run());
-        done.await(15, TimeUnit.SECONDS);
+        done.await(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
         memoryPrintThread.interrupt();
         System.out.println();
         Result result = new Result(System.currentTimeMillis() - startTime, Runtime.getRuntime().totalMemory());
