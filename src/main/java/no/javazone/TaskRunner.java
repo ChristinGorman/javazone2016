@@ -6,6 +6,7 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 public class TaskRunner {
@@ -89,12 +90,16 @@ public class TaskRunner {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
+                StringBuilder builder = new StringBuilder();
+                IntStream.range(0,mem/2).forEach(i->builder.append('\u2588'));
+                builder.append(" " + mem + "%");
+                IntStream.range(Math.max(0,50 - (50 - builder.length())),50).forEach(i->builder.append(" "));
                 long progress = ((numRuns - done.getCount()) * 100) / numRuns;
                 long timeoutProgress = Math.min(100, ((System.currentTimeMillis() - startTime )* 100) / TIMEOUT_MILLIS);
-                String line = "\r" + mem + "% memory used (progress: " + Math.max(progress, timeoutProgress) + "%)";
+                String line = "\rMemory usage: " + builder.toString() + " (progress: " + Math.max(progress, timeoutProgress) + "%)";
                 System.out.print(line);
                 System.out.flush();
-                Thread.sleep(200);
+                Thread.sleep(100);
             }catch(InterruptedException ie) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
