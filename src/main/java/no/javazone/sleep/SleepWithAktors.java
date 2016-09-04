@@ -1,32 +1,48 @@
 package no.javazone.sleep;
 
-import no.javazone.ActorSleeper;
 import no.javazone.TaskRunner;
+import no.javazone.fedex4j.Customer;
+import no.javazone.fedex4j.FedEx4J;
+import no.javazone.fedex4j.Package;
 
 public class SleepWithAktors {
 
-    public static class SleepingActor implements ActorSleeper.Aktor<Long> {
+    public static FedEx4J fedEx4J = new FedEx4J();
+
+    static class SleepingCustomer implements Customer<SleepMessage> {
 
         @Override
-        public void onMessage(ActorSleeper.ActorMessage<Long> message) {
-            if (System.currentTimeMillis() >= message.message) {
-                ActorSleeper.AktorSystem.get().sendMessage(message.sender, new ActorSleeper.ActorMessage("done", this));
+        public void onMessage(Package<SleepMessage> message) {
+            if (doneSleeping(message.payload)) {
+                fedEx4J.sendPackage(new Package(message.from, "done", this));
             } else {
-                ActorSleeper.AktorSystem.get().sendMessage(this, message);
+                fedEx4J.sendPackage(message);
             }
+        }
+
+        boolean doneSleeping(SleepMessage msg) {
+            return System.currentTimeMillis() >= msg.timestamp;
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        TaskRunner taskRunner = new TaskRunner(1_000_000);
+    static class SleepMessage {
+        final long timestamp;
 
-        ActorSleeper.AktorSystem aktorSystem = ActorSleeper.AktorSystem.get();
-        aktorSystem.addActors(() -> new SleepingActor(), Runtime.getRuntime().availableProcessors());
-        ActorSleeper.Aktor<String> callback = msg -> taskRunner.countDown();
-        ActorSleeper.AktorSystem.get().addActor(callback);
-        ActorSleeper.ActorMessage sleepMsg = new ActorSleeper.ActorMessage(System.currentTimeMillis() + 1000, callback);
-        taskRunner.runTask(() -> aktorSystem.sendMessage(SleepingActor.class, sleepMsg));
-        aktorSystem.shutDown();
-        System.exit(0);
+        SleepMessage(long sleepDuration) {
+            this.timestamp = System.currentTimeMillis() + sleepDuration;
+        }
+
+    }
+
+    public static void main(String[] args) throws Exception {
+        TaskRunner taskRunner = new TaskRunner(5_000_000);
+
+        Customer<SleepMessage> to = fedEx4J.addCustomer(new SleepingCustomer());
+        Customer from = fedEx4J.addCustomer(msg -> taskRunner.countDown());
+
+        Package<SleepMessage> pkg = new Package(to, new SleepMessage(1000), from);
+        taskRunner.runTask(() -> fedEx4J.sendPackage(pkg));
+
+        fedEx4J.close();
     }
 }
