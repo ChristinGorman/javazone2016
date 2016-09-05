@@ -1,10 +1,10 @@
 package no.javazone;
 
-import io.vertx.core.Handler;
-
 import java.text.NumberFormat;
-import java.util.Arrays;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -24,6 +24,7 @@ public class TaskRunner {
         }
 
     }
+
     private long startTime;
     private int numRuns;
     private Supplier task;
@@ -42,9 +43,10 @@ public class TaskRunner {
         this.startTime = System.currentTimeMillis();
     }
 
-    private void print(Result result) throws Exception{
+    private void print(Result result) throws Exception {
         print(result, done.getCount(), className);
     }
+
     public static void print(Result result, long remainingCount, String className) throws InterruptedException {
 
         NumberFormat format = NumberFormat.getInstance();
@@ -52,11 +54,11 @@ public class TaskRunner {
         format.setGroupingUsed(true);
 
         System.out.println(String.format(
-                "%s: remaining: %s, duration: %s, memory: %s",
-                className.substring(className.lastIndexOf(".")+1),
-                format.format(remainingCount),
-                format.format(result.duration),
-                format.format(result.memory)));
+            "%s: remaining: %s, duration: %s, memory: %s",
+            className.substring(className.lastIndexOf(".") + 1),
+            format.format(remainingCount),
+            format.format(result.duration),
+            format.format(result.memory)));
     }
 
 
@@ -86,21 +88,21 @@ public class TaskRunner {
     }
 
 
-    Thread memoryPrintThread = new Thread(()->{
+    Thread memoryPrintThread = new Thread(() -> {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
                 StringBuilder builder = new StringBuilder();
-                IntStream.range(0,mem/2).forEach(i->builder.append('\u2588'));
+                IntStream.range(0, mem / 2).forEach(i -> builder.append('\u2588'));
                 builder.append(" " + mem + "%");
-                IntStream.range(Math.max(0,50 - (50 - builder.length())),50).forEach(i->builder.append(" "));
+                IntStream.range(Math.max(0, 50 - (50 - builder.length())), 50).forEach(i -> builder.append(" "));
                 long progress = ((numRuns - done.getCount()) * 100) / numRuns;
-                long timeoutProgress = Math.min(100, ((System.currentTimeMillis() - startTime )* 100) / TIMEOUT_MILLIS);
+                long timeoutProgress = Math.min(100, ((System.currentTimeMillis() - startTime) * 100) / TIMEOUT_MILLIS);
                 String line = "\rMemory usage: " + builder.toString() + " (progress: " + Math.max(progress, timeoutProgress) + "%)";
                 System.out.print(line);
                 System.out.flush();
                 Thread.sleep(100);
-            }catch(InterruptedException ie) {
+            } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
             } catch (Exception e) {
                 e.printStackTrace();
