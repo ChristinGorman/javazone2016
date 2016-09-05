@@ -4,7 +4,7 @@ import co.paralleluniverse.fibers.Fiber;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.fibers.httpclient.FiberHttpClientBuilder;
 import co.paralleluniverse.strands.SuspendableRunnable;
-import io.vertx.core.json.Json;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 
@@ -16,24 +16,24 @@ import static no.javazone.RunConfig.url;
 
 public class FiberExample {
 
-    static CloseableHttpClient client = FiberHttpClientBuilder.
-            create(20).
-            setMaxConnPerRoute(9999).
-            setMaxConnTotal(9999).build();
+    private static ObjectMapper mapper = new ObjectMapper();
+
+    private static CloseableHttpClient client = FiberHttpClientBuilder.
+        create(20).
+        setMaxConnPerRoute(9999).
+        setMaxConnTotal(9999).build();
 
     /**
      * In current state - no where near as good performance as vertx, but syntax is better
      */
     public static void main(String[] args) throws Exception {
-        TaskRunner taskRunner = new TaskRunner(1000);
-        taskRunner.runTask(()->{
-           new Fiber((SuspendableRunnable) () -> {
-               getPersonInCity("abc");
-               taskRunner.countDown();
-           }).start();
-        });
+        TaskRunner taskRunner = new TaskRunner(1_000);
+        taskRunner.runTask(() ->
+            new Fiber((SuspendableRunnable) () -> {
+                getPersonInCity("abc");
+                taskRunner.countDown();
+            }).start());
     }
-
 
     @Suspendable
     private static TypicalExamples.PersonInCity getPersonInCity(String id) {
@@ -49,21 +49,20 @@ public class FiberExample {
 
             return translate(person, address);
 
-        }catch(IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-
-    private static TypicalExamples.Address parseAddress(String body) {
-        return Json.decodeValue(body, TypicalExamples.Address.class);
+    private static TypicalExamples.Address parseAddress(String body) throws IOException {
+        return mapper.readValue(body, TypicalExamples.Address.class);
     }
 
-    private static TypicalExamples.Person parsePerson(String body) {
-        return Json.decodeValue(body, TypicalExamples.Person.class);
+    private static TypicalExamples.Person parsePerson(String body) throws IOException {
+        return mapper.readValue(body, TypicalExamples.Person.class);
     }
 
-    private static TypicalExamples.PersonInCity translate(TypicalExamples.Person p, TypicalExamples.Address a){
+    private static TypicalExamples.PersonInCity translate(TypicalExamples.Person p, TypicalExamples.Address a) {
         return new TypicalExamples.PersonInCity(p.name, a.city);
     }
 
