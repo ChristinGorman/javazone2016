@@ -10,7 +10,6 @@ import akka.routing.RoundRobinPool;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -18,7 +17,7 @@ import static no.javazone.util.Timer.time;
 
 public class Akka {
 
-    private static final int numRuns = 50_000;
+    private static final int numRuns = 10_000;
 
     private static class TaskActor extends AbstractActor {
 
@@ -59,7 +58,7 @@ public class Akka {
                         currentSum += msg;
                         activeTasks--;
                         if (activeTasks == 0) {
-                            originator.tell(Objects.hashCode(currentSum), self());
+                            originator.tell(currentSum, self());
                         } else if (activeTasks % 1000 == 0) {
                             printProgress(activeTasks);
                         }
