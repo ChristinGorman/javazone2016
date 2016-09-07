@@ -9,9 +9,9 @@ import akka.pattern.Patterns;
 import akka.routing.RoundRobinPool;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 
 import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 import static no.javazone.util.Timer.time;
 
@@ -59,10 +59,9 @@ public class Akka {
                         activeTasks--;
                         if (activeTasks == 0) {
                             originator.tell(currentSum, self());
-                        } else if (activeTasks % 1000 == 0) {
-                            printProgress(activeTasks);
                         }
                     })
+                    .matchEquals("progress", msg -> printProgress(activeTasks))
                     .build()
             );
         }
@@ -72,9 +71,23 @@ public class Akka {
         ActorSystem system = ActorSystem.create();
 
         time(() -> {
+            printProgress(numRuns);
             ActorRef taskRunner = system.actorOf(Props.create(TaskRunner.class), "runner");
 
-            Object result = Await.result(Patterns.ask(taskRunner, "start", 30000), Duration.create(30, TimeUnit.SECONDS));
+            FiniteDuration halfSecond = Duration.create(100, TimeUnit.MILLISECONDS);
+            system.scheduler().schedule(
+                halfSecond,
+                halfSecond,
+                taskRunner,
+                "progress",
+                system.dispatcher(),
+                ActorRef.noSender()
+            );
+
+            Object result = Await.result(
+                Patterns.ask(taskRunner, "start", 30000),
+                Duration.create(30, TimeUnit.SECONDS)
+            );
 
             printProgress(0);
             System.out.println("\nDone result: " + result);
@@ -84,12 +97,11 @@ public class Akka {
 
     private static void printProgress(int activeTasks) {
         int mem = (int) ((Runtime.getRuntime().totalMemory() * 100) / Runtime.getRuntime().maxMemory());
-        StringBuilder builder = new StringBuilder();
-        IntStream.range(0, mem / 2).forEach(i -> builder.append('\u2588'));
-        builder.append(" ").append(mem).append("%");
-        IntStream.range(Math.max(0, 50 - (50 - builder.length())), 50).forEach(i -> builder.append(" "));
         long progress = ((numRuns - activeTasks) * 100) / numRuns;
-        String line = "\rMemory usage: " + builder.toString() + " (progress: " + progress + "%)";
+        String line = String.format(
+            "\r(memory: %d%%) (progress: %d%%) (active threads: %d)",
+            mem, progress, Thread.activeCount()
+        );
         System.out.print(line);
         System.out.flush();
     }
