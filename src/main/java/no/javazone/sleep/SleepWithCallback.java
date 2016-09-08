@@ -13,7 +13,7 @@ public class SleepWithCallback {
      */
     public static void main(String[] args) throws Exception {
 
-        TaskRunner taskRunner = new TaskRunner(100_000);
+        TaskRunner taskRunner = new TaskRunner(1_000_000);
         taskRunner.runTask(() -> Sleeper.sleep(1000, () -> taskRunner.countDown()));
 
     }

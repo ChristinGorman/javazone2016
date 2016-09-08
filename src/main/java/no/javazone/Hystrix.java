@@ -6,6 +6,7 @@ import rx.Observable;
 import rx.Scheduler;
 import rx.internal.schedulers.ExecutorScheduler;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Hystrix {
@@ -13,7 +14,7 @@ public class Hystrix {
     static class BigTaskCommand extends HystrixCommand<Long> {
 
         BigTaskCommand() {
-            super(HystrixCommandGroupKey.Factory.asKey("BigTaskGroup"));
+            super(HystrixCommandGroupKey.Factory.asKey("javazone"));
         }
 
         @Override
@@ -28,12 +29,16 @@ public class Hystrix {
 
         print("Big number: " + new BigTaskCommand().execute());
 
-        //Observable<Long> numObservable = new BigTaskCommand().observe();
-            //.observeOn(new ExecutorScheduler(Executors.newSingleThreadExecutor()));
+        ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        //numObservable.subscribe(bigNum -> print("Observed number: " + bigNum));
+        Observable<Long> numObservable = new BigTaskCommand().observe()
+            .observeOn(new ExecutorScheduler(executor));
+
+        numObservable.subscribe(bigNum -> print("Observed number: " + bigNum));
 
         print("Finished");
+
+        executor.shutdown();
     }
 
     private static void print(String msg) {

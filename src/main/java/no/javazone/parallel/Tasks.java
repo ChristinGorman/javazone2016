@@ -16,6 +16,6 @@ public class Tasks {
     public static String sleepStr() {
         Sleeper.sleep1Sec();
         //throw new RuntimeException("ouch!");
-        return "javaBin";
+        return "JavaZone!";
     }
 }

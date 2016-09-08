@@ -10,6 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import static no.javazone.RunConfig.url;
@@ -41,10 +42,12 @@ public class FiberExample {
             throw new IllegalArgumentException("invalid id");
         }
         try {
-            String personContent = new BufferedReader(new InputStreamReader(client.execute(new HttpGet(url + "/person/" + id)).getEntity().getContent())).readLine();
+            InputStream personStream = client.execute(new HttpGet(url + "/person/" + id)).getEntity().getContent();
+            String personContent = new BufferedReader(new InputStreamReader(personStream)).readLine();
             TypicalExamples.Person person = parsePerson(personContent);
 
-            String addressContent = new BufferedReader(new InputStreamReader((client.execute(new HttpGet(url + "/address/" + id)).getEntity().getContent()))).readLine();
+            InputStream addressStream = client.execute(new HttpGet(url + "/address/" + id)).getEntity().getContent();
+            String addressContent = new BufferedReader(new InputStreamReader(addressStream)).readLine();
             TypicalExamples.Address address = parseAddress(addressContent);
 
             return translate(person, address);

@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Sleeper {
@@ -45,7 +46,7 @@ public class Sleeper {
         return millis;
     }
 
-    static Queue<SleepCallback> sleepTasks = new LinkedBlockingQueue<>();
+    static Queue<SleepCallback> sleepTasks = new ConcurrentLinkedQueue<>();
     static {
         Thread thread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {

@@ -74,10 +74,10 @@ public class Akka {
             printProgress(numRuns);
             ActorRef taskRunner = system.actorOf(Props.create(TaskRunner.class), "runner");
 
-            FiniteDuration halfSecond = Duration.create(100, TimeUnit.MILLISECONDS);
+            FiniteDuration duration = Duration.create(100, TimeUnit.MILLISECONDS);
             system.scheduler().schedule(
-                halfSecond,
-                halfSecond,
+                duration,
+                duration,
                 taskRunner,
                 "progress",
                 system.dispatcher(),
