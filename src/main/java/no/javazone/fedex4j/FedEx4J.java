@@ -2,7 +2,7 @@ package no.javazone.fedex4j;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.IntStream.*;
 import static java.util.stream.Collectors.*;
@@ -14,32 +14,36 @@ public class FedEx4J {
      * The courier organizes packages in boxes for each customer
      * Each box has the recipient and a collection of packages to deliver
      */
-    static class CourierBox {
+    static class Shelf {
         final Customer customer;
-        final Queue<Package> mailBox = new ConcurrentLinkedQueue<>();
+        final BlockingQueue<Package> packages;
 
-        CourierBox(Customer customer) {
+        Shelf(Customer customer, BlockingQueue<Package> packages) {
             this.customer = customer;
+            this.packages = packages;
         }
 
     }
 
     static class Courier implements Runnable {
 
-        List<CourierBox> customerPackages = new CopyOnWriteArrayList<>();
         Thread myThread;
+        final FedEx4J distributionHub;
+
+        Courier(FedEx4J distributionHub) {
+            this.distributionHub = distributionHub;
+        }
+
 
         @Override
         public void run() {
             myThread = Thread.currentThread();
             while (!Thread.currentThread().isInterrupted()) {
-                customerPackages.stream()
-                        .forEach(box -> {
-                            Package pkg = box.mailBox.poll();
-                            if (pkg != null) {
-                                box.customer.onMessage(pkg);
-                            }
-                        });
+                Shelf shelf = distributionHub.nextInLine();
+                if (shelf != EMPTY_SHELF) {
+                    shelf.packages.forEach(p -> p.to.onMessage(p));
+                    distributionHub.inLine.put(shelf.customer, true);
+                }
             }
         }
 
@@ -54,58 +58,47 @@ public class FedEx4J {
         }
     }
 
-    int processorCount = Runtime.getRuntime().availableProcessors();
-    final Map<Customer, CourierBox> boxForCustomer = new ConcurrentHashMap<>();
+    static int processorCount = Runtime.getRuntime().availableProcessors();
     final List<Courier> couriers = new CopyOnWriteArrayList<>();
 
-    final Map<Class, List<CourierBox>> customersByType = new ConcurrentHashMap<>();
+    final Map<Customer, Shelf> shelves = new ConcurrentHashMap<>();
+    final ConcurrentMap<Customer, Boolean> inLine = new ConcurrentHashMap<>();
 
-    public FedEx4J() {
-        couriers.addAll(range(0, processorCount)
-                .mapToObj(i -> new Courier().startShift())
+    private FedEx4J() {
+
+    }
+
+    public static FedEx4J create() {
+        FedEx4J fedEx4J = new FedEx4J();
+        fedEx4J.couriers.addAll(range(0, processorCount)
+                .mapToObj(i -> new Courier(fedEx4J).startShift())
                 .collect(toList()));
+        return fedEx4J;
     }
 
+    private static Shelf EMPTY_SHELF = new Shelf(null, new LinkedBlockingQueue<>());
+    public Shelf nextInLine() {
+        if (shelves.isEmpty()) return EMPTY_SHELF;
 
-    public List<Customer> add1CustomerPerCourier(Supplier<Customer> customer) {
-        return couriers.stream()
-                .map(c -> addCustomerToCourier(customer.get(), c))
-                .collect(toList());
-    }
-
-    public Customer addCustomer(Customer customer) {
-
-        //assign to courier
-        int randomCourier = ThreadLocalRandom.current().nextInt(processorCount);
-        Courier courier = couriers.get(randomCourier);
-        return addCustomerToCourier(customer, courier);
-
-    }
-
-    private Customer addCustomerToCourier(Customer customer, Courier courier) {
-        if (boxForCustomer.containsKey(customer)) return customer;
-
-        //set up a box for packages destined for this customer
-        CourierBox box = new CourierBox(customer);
-        boxForCustomer.put(customer, box);
-
-        courier.customerPackages.add(box);
-
-        customersByType.putIfAbsent(customer.getClass(), new CopyOnWriteArrayList<>());
-        customersByType.get(customer.getClass()).add(box);
-
-        return customer;
-    }
-
-
-    public Customer findCustomerOfType(Class<? extends Customer> clazz) {
-        List<CourierBox> courierBoxes = customersByType.get(clazz);
-        int randomSelection = ThreadLocalRandom.current().nextInt(courierBoxes.size());
-        return courierBoxes.get(randomSelection).customer;
+        BlockingQueue<Package> forCourier = new LinkedBlockingQueue<>();
+        Optional<Customer> customer = inLine.entrySet().stream()
+                .filter(e -> e.getValue())
+                .map(e -> e.getKey())
+                .findAny();
+        if (customer.isPresent() && inLine.put(customer.get(), false)) {
+            shelves.get(customer.get()).packages.drainTo(forCourier);
+            return new Shelf(customer.get(), forCourier);
+        }
+        return EMPTY_SHELF;
     }
 
     public void sendPackage(Package pkg) {
-        boxForCustomer.get(pkg.to).mailBox.offer(pkg);
+
+        if (!shelves.containsKey(pkg.to)) {
+            shelves.putIfAbsent(pkg.to, new Shelf(pkg.to, new LinkedBlockingQueue<>()));
+        }
+        shelves.get(pkg.to).packages.offer(pkg);
+        inLine.putIfAbsent(pkg.to, true);
     }
 
     public void close() {

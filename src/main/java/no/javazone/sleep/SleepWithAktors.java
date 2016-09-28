@@ -5,9 +5,15 @@ import no.javazone.fedex4j.Customer;
 import no.javazone.fedex4j.FedEx4J;
 import no.javazone.fedex4j.Package;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
+
 public class SleepWithAktors {
 
-    public static FedEx4J fedEx4J = new FedEx4J();
+    public static FedEx4J fedEx4J = FedEx4J.create();
 
     static class SleepingCustomer implements Customer<SleepMessage> {
 
@@ -25,6 +31,25 @@ public class SleepWithAktors {
         }
     }
 
+
+    static class Delegator<T> implements Customer<T> {
+
+        final int count;
+        final Queue<Customer<T>> myCustomers = new ConcurrentLinkedQueue<>();
+
+        Delegator(int count, Supplier<Customer<T>> customer) {
+            this.count = count;
+            IntStream.range(0, count).forEach(i-> myCustomers.offer(customer.get()));
+        }
+
+        @Override
+        public void onMessage(Package<T> msg) {
+            Customer<T> thisOne = myCustomers.poll();
+            thisOne.onMessage(msg);
+            myCustomers.offer(thisOne);
+        }
+    }
+
     static class SleepMessage {
         final long timestamp;
 
@@ -35,12 +60,13 @@ public class SleepWithAktors {
     }
 
     public static void main(String[] args) throws Exception {
-        TaskRunner taskRunner = new TaskRunner(5_000_000);
+        TaskRunner taskRunner = new TaskRunner(10_000);
 
-        Customer<SleepMessage> to = fedEx4J.addCustomer(new SleepingCustomer());
-        Customer from = fedEx4J.addCustomer(msg -> taskRunner.countDown());
+        Customer<SleepMessage> delegator = new Delegator<>(10, ()->new SleepingCustomer());
 
-        Package<SleepMessage> pkg = new Package(to, new SleepMessage(1000), from);
+        Customer from = msg -> taskRunner.countDown();
+
+        Package<SleepMessage> pkg = new Package(delegator, new SleepMessage(1000), from);
         taskRunner.runTask(() -> fedEx4J.sendPackage(pkg));
 
         fedEx4J.close();
