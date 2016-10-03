@@ -2,7 +2,6 @@ package no.javazone.fedex4j;
 
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.IntStream.*;
 import static java.util.stream.Collectors.*;
@@ -10,27 +9,28 @@ import static java.util.stream.Collectors.*;
 public class FedEx4J {
 
 
+
     /**
      * The courier organizes packages in boxes for each customer
      * Each box has the recipient and a collection of packages to deliver
      */
-    static class Shelf {
-        final Customer customer;
+    static class BoxWithPackages {
+        final Office recipient;
         final BlockingQueue<Package> packages;
 
-        Shelf(Customer customer, BlockingQueue<Package> packages) {
-            this.customer = customer;
+        BoxWithPackages(Office office, BlockingQueue<Package> packages) {
+            this.recipient = office;
             this.packages = packages;
         }
 
     }
 
-    static class Courier implements Runnable {
+    static class DroneCourier implements Runnable {
 
         Thread myThread;
         final FedEx4J distributionHub;
 
-        Courier(FedEx4J distributionHub) {
+        DroneCourier(FedEx4J distributionHub) {
             this.distributionHub = distributionHub;
         }
 
@@ -39,17 +39,14 @@ public class FedEx4J {
         public void run() {
             myThread = Thread.currentThread();
             while (!Thread.currentThread().isInterrupted()) {
-                Shelf shelf = distributionHub.nextInLine();
-                if (shelf != EMPTY_SHELF) {
-                    shelf.packages.forEach(p -> p.to.onMessage(p));
-                    distributionHub.inLine.put(shelf.customer, true);
-                }
+                distributionHub.getNextPackagesToDeliver()
+                        .packages.forEach(p -> p.to.onMessage(p));
             }
         }
 
-        public Courier startShift() {
-            myThread = new Thread(this);
-            myThread.start();
+
+        public DroneCourier startShift() {
+            new Thread(this).start();
             return this;
         }
 
@@ -58,11 +55,12 @@ public class FedEx4J {
         }
     }
 
-    static int processorCount = Runtime.getRuntime().availableProcessors();
-    final List<Courier> couriers = new CopyOnWriteArrayList<>();
 
-    final Map<Customer, Shelf> shelves = new ConcurrentHashMap<>();
-    final ConcurrentMap<Customer, Boolean> inLine = new ConcurrentHashMap<>();
+    static int processorCount = Runtime.getRuntime().availableProcessors();
+    final List<DroneCourier> couriers = new CopyOnWriteArrayList<>();
+
+    final Map<Office, BoxWithPackages> shelves = new ConcurrentHashMap<>();
+
 
     private FedEx4J() {
 
@@ -71,34 +69,30 @@ public class FedEx4J {
     public static FedEx4J create() {
         FedEx4J fedEx4J = new FedEx4J();
         fedEx4J.couriers.addAll(range(0, processorCount)
-                .mapToObj(i -> new Courier(fedEx4J).startShift())
+                .mapToObj(i -> new DroneCourier(fedEx4J).startShift())
                 .collect(toList()));
         return fedEx4J;
     }
 
-    private static Shelf EMPTY_SHELF = new Shelf(null, new LinkedBlockingQueue<>());
-    public Shelf nextInLine() {
-        if (shelves.isEmpty()) return EMPTY_SHELF;
+    private static BoxWithPackages EMPTY_BOX = new BoxWithPackages(null, new LinkedBlockingQueue<>());
+
+    public BoxWithPackages getNextPackagesToDeliver() {
+        if (shelves.isEmpty()) return EMPTY_BOX;
 
         BlockingQueue<Package> forCourier = new LinkedBlockingQueue<>();
-        Optional<Customer> customer = inLine.entrySet().stream()
-                .filter(e -> e.getValue())
-                .map(e -> e.getKey())
-                .findAny();
-        if (customer.isPresent() && inLine.put(customer.get(), false)) {
-            shelves.get(customer.get()).packages.drainTo(forCourier);
-            return new Shelf(customer.get(), forCourier);
+        Optional<BoxWithPackages> box = shelves.values().stream().filter(e -> !e.packages.isEmpty()).findAny();
+        if (box.isPresent()) {
+            box.get().packages.drainTo(forCourier);
+            return new BoxWithPackages(box.get().recipient, forCourier);
         }
-        return EMPTY_SHELF;
+        return EMPTY_BOX;
     }
 
     public void sendPackage(Package pkg) {
-
         if (!shelves.containsKey(pkg.to)) {
-            shelves.putIfAbsent(pkg.to, new Shelf(pkg.to, new LinkedBlockingQueue<>()));
+            shelves.putIfAbsent(pkg.to, new BoxWithPackages(pkg.to, new LinkedBlockingQueue<>()));
         }
         shelves.get(pkg.to).packages.offer(pkg);
-        inLine.putIfAbsent(pkg.to, true);
     }
 
     public void close() {

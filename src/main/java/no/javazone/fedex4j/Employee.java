@@ -1,6 +1,6 @@
 package no.javazone.fedex4j;
 
 @FunctionalInterface
-public interface Customer<T> {
+public interface Employee<T> {
     void onMessage(Package<T> msg);
 }
